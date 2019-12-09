@@ -102,7 +102,7 @@ class PairingSkill(MycroftSkill):
                 # Not paired or already pairing, so start the process.
                 self.count = 0
             self.reload_skill = False  # Prevent restart during the process
-
+            self.bus.emit(Message(msg_type='mycroft.pairing.start'))
             self.log.debug("Kicking off pairing sequence")
 
             try:
@@ -187,6 +187,7 @@ class PairingSkill(MycroftSkill):
             with self.pair_dialog_lock:
                 if self.mycroft_ready:
                     # Tell user they are now paired
+                    self.bus.emit(Message('mycroft.pairing.success'))
                     self.speak_dialog(self.paired_dialog)
                     mycroft.audio.wait_while_speaking()
                 else:
@@ -269,6 +270,7 @@ class PairingSkill(MycroftSkill):
         data = {"code": '. '.join(map(self.nato_dict.get, code)) + '.'}
 
         # Make sure code stays on display
+        self.gui.display_screen('pairing_code', data=dict(pairing_code=code))
         self.enclosure.deactivate_mouth_events()
         self.enclosure.mouth_text(self.data.get("code"))
         self.gui['code'] = self.data.get("code")
